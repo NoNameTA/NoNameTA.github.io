@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tìm Video — Compact Charging</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16181D;          /* chữ chính */
+    --ink-2:#5A5F6B;        /* chữ phụ */
+    --line:#E3E2DC;         /* viền */
+    --paper:#F2F2EE;        /* nền trang */
+    --card:#FFFFFF;         /* nền thẻ */
+    --charge:#F5A524;       /* màu thương hiệu: vàng sạc */
+    --charge-deep:#C97F0A;
+    --ok:#1FA86B;           /* được phép */
+    --no:#DD4A3F;           /* không được phép */
+    --cc:#2E7CE6;           /* creative commons */
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 20px;}
+
+  /* ---------- Header ---------- */
+  header{padding:38px 0 22px;}
+  .badge{
+    display:inline-flex; align-items:center; gap:7px; font-family:'IBM Plex Mono',monospace;
+    font-size:12px; letter-spacing:.04em; color:var(--charge-deep);
+    background:#FBEFD6; border:1px solid #F3DDB0; padding:5px 11px; border-radius:999px;
+  }
+  .bolt{width:13px; height:13px; display:inline-block;}
+  h1{
+    font-family:'Space Grotesk',sans-serif; font-weight:700;
+    font-size:clamp(30px,5vw,46px); line-height:1.05; letter-spacing:-.02em;
+    margin:16px 0 8px;
+  }
+  h1 em{font-style:normal; color:var(--charge-deep);}
+  .sub{color:var(--ink-2); max-width:60ch; font-size:15px;}
+
+  /* ---------- Panel điều khiển ---------- */
+  .panel{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:22px; margin:24px 0; box-shadow:0 1px 0 rgba(0,0,0,.02);
+  }
+  .field{margin-bottom:16px;}
+  .field:last-child{margin-bottom:0;}
+  label{display:block; font-weight:600; font-size:13px; margin-bottom:7px;}
+  .hint{font-size:12px; color:var(--ink-2); font-weight:400; margin-left:6px;}
+  input[type=text],input[type=password],input[type=number],select{
+    width:100%; padding:11px 13px; font-size:15px; font-family:inherit;
+    border:1px solid var(--line); border-radius:10px; background:#FCFCFA; color:var(--ink);
+  }
+  input:focus,select:focus{outline:2px solid var(--charge); outline-offset:0; border-color:transparent;}
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media(max-width:620px){.row{grid-template-columns:1fr;}}
+
+  /* "Đồng hồ sạc" — signature: chọn nhanh ngưỡng view như các nấc pin */
+  .gauge{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:9px;}
+  .cell{
+    font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600;
+    padding:8px 13px; border:1px solid var(--line); background:#FCFCFA; color:var(--ink-2);
+    border-radius:8px; cursor:pointer; transition:.12s; position:relative;
+  }
+  .cell:hover{border-color:var(--charge);}
+  .cell.on{
+    background:linear-gradient(var(--charge),var(--charge-deep)); color:#fff;
+    border-color:var(--charge-deep);
+  }
+
+  .checks{display:flex; flex-wrap:wrap; gap:18px;}
+  .check{display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer;}
+  .check input{width:17px; height:17px; accent-color:var(--charge-deep);}
+
+  .go{
+    width:100%; margin-top:6px; padding:14px; font-family:'Space Grotesk',sans-serif;
+    font-weight:600; font-size:16px; color:#16181D; border:none; border-radius:11px;
+    background:linear-gradient(var(--charge),var(--charge-deep)); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:9px; transition:.12s;
+  }
+  .go:hover{filter:brightness(1.05);}
+  .go:disabled{opacity:.6; cursor:wait;}
+
+  /* ---------- Trạng thái ---------- */
+  #status{font-size:14px; margin:6px 0 0; min-height:20px; font-family:'IBM Plex Mono',monospace;}
+  #status.err{color:var(--no);}
+  #status.ok{color:var(--ok);}
+  #status.info{color:var(--ink-2);}
+
+  .toolbar{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin:30px 0 14px;}
+  .toolbar h2{font-family:'Space Grotesk',sans-serif; font-size:20px; margin:0;}
+  .ghost{
+    font-family:'Inter',sans-serif; font-size:13px; font-weight:600; padding:9px 14px;
+    border:1px solid var(--line); background:var(--card); border-radius:9px; cursor:pointer; color:var(--ink);
+  }
+  .ghost:hover{border-color:var(--charge);}
+
+  /* ---------- Kết quả ---------- */
+  #results{display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:18px;}
+  .vid{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column;}
+  .frame{position:relative; aspect-ratio:16/9; background:#000;}
+  .frame iframe,.frame img{position:absolute; inset:0; width:100%; height:100%; border:0; object-fit:cover;}
+  .noembed{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; color:#fff; background:#1a1a1a; text-align:center; padding:14px;}
+  .noembed a{color:var(--charge); font-weight:600; text-decoration:none;}
+  .vbody{padding:14px; display:flex; flex-direction:column; gap:10px; flex:1;}
+  .vtitle{font-weight:600; font-size:14.5px; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .meta{font-size:12.5px; color:var(--ink-2);}
+  .stats{display:flex; gap:14px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--ink);}
+  .stats b{font-weight:600;}
+  .tags{display:flex; flex-wrap:wrap; gap:6px;}
+  .tag{font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:7px; font-family:'IBM Plex Mono',monospace;}
+  .tag.ok{background:#E4F6EE; color:#157A4D;}
+  .tag.no{background:#FCE7E5; color:#B43329;}
+  .tag.cc{background:#E5EFFC; color:#1E5DB8;}
+  .tag.neutral{background:#EFEFEA; color:var(--ink-2);}
+  .links{display:flex; flex-direction:column; gap:8px; margin-top:auto; padding-top:6px; border-top:1px dashed var(--line);}
+  .links a.watch{font-size:13px; font-weight:600; color:var(--charge-deep); text-decoration:none;}
+  .shopee{display:flex; gap:6px;}
+  .shopee input{font-size:13px; padding:8px 10px;}
+  .shopee button{white-space:nowrap; font-size:12px; font-weight:600; padding:0 12px; border:1px solid var(--line); border-radius:9px; background:#FCFCFA; cursor:pointer;}
+  .shopee button:hover{border-color:var(--charge);}
+  .saved{font-size:12px;}
+  .saved a{color:var(--cc); word-break:break-all;}
+
+  /* ---------- Ghi chú ---------- */
+  .note{font-size:13px; color:var(--ink-2); background:#FBF6E9; border:1px solid #F0E2BE; border-radius:12px; padding:14px 16px; margin:14px 0;}
+  .note b{color:var(--ink);}
+  details{margin:10px 0;}
+  summary{cursor:pointer; font-weight:600; font-size:14px;}
+  details ol{font-size:13.5px; color:var(--ink-2); padding-left:20px;}
+  details code{background:#EDEDE7; padding:1px 5px; border-radius:5px; font-family:'IBM Plex Mono',monospace; font-size:12.5px;}
+  details a{color:var(--charge-deep);}
+  footer{padding:34px 0; color:var(--ink-2); font-size:12.5px; text-align:center;}
+  .skel{height:1px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="badge">
+      <svg class="bolt" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>
+      CÔNG CỤ TÌM VIDEO
+    </span>
+    <h1>Tìm video theo <em>từ khóa</em> & lượt xem</h1>
+    <p class="sub">Tìm video trên YouTube qua API của Google, lọc theo số view, xem trực tiếp ngay trên trang, kiểm tra quyền nhúng và gắn link sản phẩm Shopee vào từng video.</p>
+  </header>
+
+  <!-- ===== Bảng điều khiển ===== -->
+  <div class="panel">
+    <div class="field">
+      <label>API key — YouTube Data API v3 <span class="hint">bắt buộc, lấy ở Google Cloud Console (xem hướng dẫn cuối trang)</span></label>
+      <input type="password" id="apiKey" placeholder="AIza..." autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label>Từ khóa tìm kiếm</label>
+      <input type="text" id="keyword" placeholder="ví dụ: sạc nhanh, củ sạc MagSafe, review pin dự phòng...">
+    </div>
+
+    <div class="field">
+      <label>Lượt xem tối thiểu <span class="hint">chọn nhanh hoặc nhập số bên dưới</span></label>
+      <div class="gauge" id="gauge">
+        <button type="button" class="cell on" data-v="0">Tất cả</button>
+        <button type="button" class="cell" data-v="1000">1K+</button>
+        <button type="button" class="cell" data-v="10000">10K+</button>
+        <button type="button" class="cell" data-v="100000">100K+</button>
+        <button type="button" class="cell" data-v="1000000">1Tr+</button>
+        <button type="button" class="cell" data-v="10000000">10Tr+</button>
+      </div>
+      <input type="number" id="minViews" value="0" min="0" step="1000">
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Sắp xếp</label>
+        <select id="order">
+          <option value="relevance">Liên quan nhất</option>
+          <option value="viewCount">Nhiều view nhất</option>
+          <option value="date">Mới nhất</option>
+          <option value="rating">Đánh giá cao</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Số video muốn lấy</label>
+        <input type="number" id="count" value="12" min="1" max="50">
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="thorough"> Tìm kỹ (quét nhiều trang, chậm hơn nhưng kết quả sâu hơn)</label>
+        <label class="check"><input type="checkbox" id="onlyEmbed"> Chỉ video cho phép nhúng</label>
+        <label class="check"><input type="checkbox" id="onlyCC"> Chỉ giấy phép Creative Commons</label>
+      </div>
+    </div>
+
+    <button class="go" id="goBtn" onclick="doSearch()">
+      <svg class="bolt" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>
+      Tìm video
+    </button>
+    <p id="status"></p>
+  </div>
+
+  <!-- ===== Khu kết quả ===== -->
+  <div class="toolbar" id="toolbar" style="display:none;">
+    <h2 id="resultTitle">Kết quả</h2>
+    <button class="ghost" onclick="exportCSV()">⬇ Xuất CSV (video + link Shopee)</button>
+  </div>
+  <div id="results"></div>
+
+  <!-- ===== Ghi chú trung thực ===== -->
+  <div class="note" style="margin-top:30px;">
+    <b>Vì sao chỉ có YouTube?</b> YouTube có API tìm kiếm công khai (Google cung cấp). TikTok và Facebook <b>không</b> mở API tìm video theo từ khóa cho mục đích này, nên không thể làm tương tự một cách hợp lệ. Công cụ này tập trung làm tốt phần YouTube.
+  </div>
+
+  <div class="note">
+    <b>Về "quyền xem / đăng lại":</b> Nhãn <span style="color:#157A4D;font-weight:600">Cho phép nhúng</span> nghĩa là chủ video bật chế độ nhúng — bạn được hiển thị video trên trang. Nhãn <span style="color:#1E5DB8;font-weight:600">Creative Commons</span> là video cho phép dùng lại theo giấy phép CC. Còn <b>tải về rồi đăng lại</b> là vấn đề bản quyền riêng, công cụ không thể tự khẳng định — hãy tự xác minh trước khi sử dụng lại.
+  </div>
+
+  <details>
+    <summary>Hướng dẫn lấy API key (miễn phí) — bấm để mở</summary>
+    <ol>
+      <li>Vào <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a>, đăng nhập tài khoản Google.</li>
+      <li>Tạo một dự án mới (Project).</li>
+      <li>Vào <b>APIs &amp; Services → Library</b>, tìm <code>YouTube Data API v3</code> và bấm <b>Enable</b>.</li>
+      <li>Vào <b>APIs &amp; Services → Credentials → Create credentials → API key</b>, sao chép key dán vào ô phía trên.</li>
+      <li><b>Bảo mật key:</b> bấm vào key → <b>Application restrictions → HTTP referrers</b>, thêm tên miền GitHub Pages của bạn (vd <code>tên.github.io/*</code>) để người khác không dùng trộm key.</li>
+    </ol>
+    <p style="font-size:13px;color:#5A5F6B;">Hạn mức miễn phí: ~10.000 đơn vị/ngày. Mỗi lần tìm tốn 100 đơn vị, nên bật "Tìm kỹ" sẽ tốn nhiều hơn. Hết hạn mức thì chờ sang ngày hôm sau hoặc xin tăng quota.</p>
+  </details>
+
+  <footer>Compact Charging · Công cụ tìm video chạy hoàn toàn trên trình duyệt, không gửi dữ liệu đi đâu.</footer>
+</div>
+
+<script>
+/* ====== Trạng thái dùng trong phiên ======
+   Để xem trước hoạt động ổn định, key được giữ trong biến (không lưu vĩnh viễn).
+   Khi bạn đã đẩy lên GitHub Pages và muốn nhớ key, có thể thêm localStorage. */
+const API = 'https://www.googleapis.com/youtube/v3';
+let lastResults = [];          // phục vụ xuất CSV
+const shopeeLinks = {};        // videoId -> link Shopee đã gắn
+
+/* --- Chọn nhanh ngưỡng view (các nấc "pin") --- */
+document.querySelectorAll('.cell').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.cell').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById('minViews').value = btn.dataset.v;
+  });
+});
+document.getElementById('minViews').addEventListener('input',()=>{
+  document.querySelectorAll('.cell').forEach(b=>b.classList.remove('on'));
+});
+// Enter ở ô từ khóa = tìm luôn
+document.getElementById('keyword').addEventListener('keydown',e=>{ if(e.key==='Enter') doSearch(); });
+
+/* --- Tiện ích --- */
+function status(msg, type){ const el=document.getElementById('status'); el.textContent=msg; el.className=type||''; }
+function setLoading(on){ const b=document.getElementById('goBtn'); b.disabled=on; }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function fmt(n){ n=Number(n)||0;
+  if(n>=1e9) return (n/1e9).toFixed(1).replace('.0','')+' tỷ';
+  if(n>=1e6) return (n/1e6).toFixed(1).replace('.0','')+' tr';
+  if(n>=1e3) return (n/1e3).toFixed(1).replace('.0','')+'K';
+  return n.toLocaleString('vi-VN'); }
+function parseDur(iso){
+  const m=String(iso||'').match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/); if(!m) return '';
+  const h=+(m[1]||0), mi=+(m[2]||0), s=+(m[3]||0);
+  const mm = h>0 ? String(mi).padStart(2,'0') : String(mi);
+  return (h>0?h+':':'')+mm+':'+String(s).padStart(2,'0');
+}
+function friendlyError(e){
+  const reason = e && (e.errors && e.errors[0] && e.errors[0].reason);
+  if(reason==='quotaExceeded') return 'Hết hạn mức API hôm nay (10.000 đơn vị/ngày, mỗi lần tìm tốn 100). Thử lại ngày mai hoặc xin tăng quota.';
+  if(reason==='keyInvalid') return 'API key không hợp lệ. Kiểm tra lại key trong Google Cloud Console.';
+  if(reason==='accessNotConfigured') return 'Chưa bật "YouTube Data API v3" cho dự án. Vào Library và bấm Enable.';
+  if(reason==='ipRefererBlocked') return 'Key bị chặn theo referrer/domain. Thêm tên miền của bạn vào phần HTTP referrers của key.';
+  return 'Lỗi: ' + (e && e.message ? e.message : JSON.stringify(e));
+}
+
+/* --- Tìm kiếm chính --- */
+async function doSearch(){
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const q = document.getElementById('keyword').value.trim();
+  if(!apiKey){ status('Bạn cần nhập API key của YouTube Data API v3.','err'); return; }
+  if(!q){ status('Hãy nhập từ khóa cần tìm.','err'); return; }
+
+  const order = document.getElementById('order').value;
+  const minViews = Number(document.getElementById('minViews').value)||0;
+  const want = Math.max(1, Math.min(50, Number(document.getElementById('count').value)||12));
+  const thorough = document.getElementById('thorough').checked;
+  const onlyEmbed = document.getElementById('onlyEmbed').checked;
+  const onlyCC = document.getElementById('onlyCC').checked;
+  const maxPages = thorough ? 5 : 1;   // mỗi trang tối đa 50 video
+
+  setLoading(true); status('Đang tìm video...','info');
+  document.getElementById('results').innerHTML='';
+
+  try{
+    // 1) Lấy danh sách video qua search.list (chỉ trả về ID + tiêu đề)
+    let token='', items=[];
+    for(let p=0;p<maxPages;p++){
+      const u = `${API}/search?part=snippet&type=video&maxResults=50&q=${encodeURIComponent(q)}&order=${order}`
+              + (token?`&pageToken=${token}`:'') + `&key=${apiKey}`;
+      const r = await fetch(u); const d = await r.json();
+      if(d.error) throw d.error;
+      items.push(...(d.items||[]));
+      status(`Đang quét trang ${p+1}... (đã thấy ${items.length} video)`,'info');
+      if(!d.nextPageToken) break;
+      token = d.nextPageToken;
+    }
+
+    const ids=[...new Set(items.map(i=>i.id && i.id.videoId).filter(Boolean))];
+    if(!ids.length){ status('Không tìm thấy video nào với từ khóa này.','err'); setLoading(false); return; }
+
+    // 2) Lấy chi tiết (view, quyền nhúng, giấy phép, thời lượng) qua videos.list
+    let details=[];
+    for(let i=0;i<ids.length;i+=50){
+      const chunk=ids.slice(i,i+50);
+      const u=`${API}/videos?part=snippet,statistics,status,contentDetails&id=${chunk.join(',')}&key=${apiKey}`;
+      const r=await fetch(u); const d=await r.json();
+      if(d.error) throw d.error;
+      details.push(...(d.items||[]));
+    }
+
+    // 3) Lọc theo điều kiện
+    let out = details.filter(v=>{
+      const views = Number(v.statistics && v.statistics.viewCount || 0);
+      if(views < minViews) return false;
+      if(onlyEmbed && !(v.status && v.status.embeddable)) return false;
+      if(onlyCC && !(v.status && v.status.license==='creativeCommon')) return false;
+      return true;
+    });
+
+    // 4) Sắp xếp theo view giảm dần rồi cắt lấy số lượng cần
+    out.sort((a,b)=> Number(b.statistics.viewCount||0) - Number(a.statistics.viewCount||0));
+    out = out.slice(0, want);
+
+    if(!out.length){ status(`Đã quét ${ids.length} video nhưng không có video nào đạt ngưỡng lọc. Thử hạ lượt view tối thiểu hoặc bỏ bớt bộ lọc.`,'err'); setLoading(false); return; }
+
+    lastResults = out;
+    render(out);
+    status(`Tìm thấy ${out.length} video phù hợp (đã quét ${ids.length} video qua ${maxPages} trang).`,'ok');
+  }catch(e){
+    status(friendlyError(e),'err');
+  }
+  setLoading(false);
+}
+
+/* --- Hiển thị kết quả --- */
+function render(list){
+  document.getElementById('toolbar').style.display='flex';
+  document.getElementById('resultTitle').textContent = `Kết quả (${list.length})`;
+  const box=document.getElementById('results');
+
+  box.innerHTML = list.map(v=>{
+    const id=v.id;
+    const s=v.snippet||{}, st=v.statistics||{}, status=v.status||{}, cd=v.contentDetails||{};
+    const url=`https://www.youtube.com/watch?v=${id}`;
+    const thumb=(s.thumbnails && (s.thumbnails.medium||s.thumbnails.default)||{}).url || '';
+    const embeddable = !!status.embeddable;
+    const cc = status.license==='creativeCommon';
+    const date = s.publishedAt ? new Date(s.publishedAt).toLocaleDateString('vi-VN') : '';
+
+    const player = embeddable
+      ? `<iframe loading="lazy" src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>`
+      : `<img loading="lazy" src="${thumb}" alt="">
+         <div class="noembed"><span>Video này không cho nhúng</span>
+         <a href="${url}" target="_blank" rel="noopener">▶ Xem trên YouTube</a></div>`;
+
+    const saved = shopeeLinks[id]
+      ? `<div class="saved">Đã gắn: <a href="${esc(shopeeLinks[id])}" target="_blank" rel="noopener">${esc(shopeeLinks[id])}</a></div>` : '';
+
+    return `<div class="vid">
+      <div class="frame">${player}</div>
+      <div class="vbody">
+        <div class="vtitle">${esc(s.title)}</div>
+        <div class="meta">${esc(s.channelTitle)} · ${date}${cd.duration?` · ${parseDur(cd.duration)}`:''}</div>
+        <div class="stats">
+          <span><b>${fmt(st.viewCount)}</b> view</span>
+          ${st.likeCount?`<span><b>${fmt(st.likeCount)}</b> thích</span>`:''}
+        </div>
+        <div class="tags">
+          <span class="tag ${embeddable?'ok':'no'}">${embeddable?'Cho phép nhúng':'Không cho nhúng'}</span>
+          <span class="tag ${cc?'cc':'neutral'}">${cc?'Creative Commons':'Bản quyền chuẩn'}</span>
+          <span class="tag neutral">${esc(status.privacyStatus||'')}</span>
+        </div>
+        <div class="links">
+          <a class="watch" href="${url}" target="_blank" rel="noopener">🔗 Link video gốc</a>
+          <div class="shopee">
+            <input type="text" id="sp_${id}" placeholder="Dán link sản phẩm Shopee..." value="${esc(shopeeLinks[id]||'')}">
+            <button onclick="saveShopee('${id}')">Gắn link</button>
+          </div>
+          ${saved}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* --- Gắn link Shopee cho 1 video --- */
+function saveShopee(id){
+  const val=document.getElementById('sp_'+id).value.trim();
+  if(val) shopeeLinks[id]=val; else delete shopeeLinks[id];
+  render(lastResults);  // vẽ lại để cập nhật dòng "Đã gắn"
+}
+
+/* --- Xuất CSV: tiêu đề, link video, view, quyền, link Shopee --- */
+function exportCSV(){
+  if(!lastResults.length){ status('Chưa có kết quả để xuất.','err'); return; }
+  const rows=[['Tiêu đề','Kênh','Link video','Lượt xem','Cho phép nhúng','Giấy phép','Link Shopee']];
+  lastResults.forEach(v=>{
+    const id=v.id, s=v.snippet||{}, st=v.statistics||{}, status=v.status||{};
+    rows.push([
+      (s.title||'').replace(/"/g,'""'),
+      (s.channelTitle||'').replace(/"/g,'""'),
+      `https://www.youtube.com/watch?v=${id}`,
+      st.viewCount||0,
+      status.embeddable?'Có':'Không',
+      status.license==='creativeCommon'?'Creative Commons':'Bản quyền chuẩn',
+      (shopeeLinks[id]||'').replace(/"/g,'""')
+    ]);
+  });
+  const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='danh-sach-video.csv';
+  a.click();
+}
+</script>
+</body>
+</html>
