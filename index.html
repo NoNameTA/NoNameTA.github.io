@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ===== ĐỔI TIÊU ĐỀ TAB ===== -->
+  <title>Trang cá nhân</title>
+  <meta name="description" content="Trang cá nhân.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#0E0F13;
+      --surface:#16181E;
+      --elevated:#1C1F27;
+      --border:#272B34;
+      --text:#E7E8EC;
+      --muted:#9095A1;
+      --accent:#FF8551;          /* MÀU NHẤN — đổi ở đây */
+      --accent-soft:rgba(255,133,81,.13);
+      --radius:14px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{
+      font-family:'Inter',system-ui,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.65;
+      -webkit-font-smoothing:antialiased;
+    }
+    .sora{font-family:'Sora',sans-serif}
+    .mono{font-family:'Space Mono',monospace}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:740px;margin:0 auto;padding:0 24px}
+    :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+    /* ===== HEADER ===== */
+    header{position:sticky;top:0;z-index:20;background:rgba(14,15,19,.8);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+    .nav{display:flex;align-items:center;justify-content:space-between;height:62px}
+    .brand{font-family:'Sora';font-weight:700;font-size:18px}
+    .brand .dot{color:var(--accent)}
+    .nav-links{display:flex;gap:24px;font-size:14px;color:var(--muted)}
+    .nav-links a:hover{color:var(--text)}
+
+    /* ===== HERO ===== */
+    .hero{position:relative;padding:90px 0 64px;overflow:hidden}
+    .hero::before{content:"";position:absolute;top:-120px;left:-80px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,var(--accent-soft),transparent 70%);pointer-events:none}
+    .eyebrow{font-family:'Space Mono';font-size:13px;color:var(--accent);margin-bottom:18px}
+    .hero h1{font-family:'Sora';font-weight:700;font-size:clamp(44px,8vw,76px);line-height:1;letter-spacing:-0.03em;margin-bottom:18px}
+    .hero .lead{font-size:19px;color:var(--muted);max-width:520px;margin-bottom:32px}
+    .hero-links{display:flex;gap:12px;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;font-weight:500;font-size:15px;transition:transform .15s ease}
+    .btn:hover{transform:translateY(-2px)}
+    .btn-fill{background:var(--accent);color:#1a0e07}
+    .btn-line{border:1px solid var(--border);background:var(--surface);color:var(--text)}
+
+    /* ===== KHỐI CHUNG ===== */
+    section.block{padding:54px 0;border-top:1px solid var(--border)}
+    .label{font-family:'Space Mono';font-size:12px;color:var(--accent);margin-bottom:18px}
+    .block h2{font-family:'Sora';font-weight:600;font-size:28px;margin-bottom:16px}
+    .block p{color:var(--muted);font-size:17px;margin-bottom:14px}
+
+    /* ===== DỰ ÁN ===== */
+    .projects{display:grid;gap:14px;margin-top:6px}
+    .proj{display:block;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;transition:border-color .2s,transform .15s ease,background .2s}
+    .proj:hover{border-color:var(--accent);background:var(--elevated);transform:translateY(-3px)}
+    .proj h3{font-family:'Sora';font-weight:600;font-size:19px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+    .proj h3 .arr{color:var(--accent)}
+    .proj p{font-size:15px;color:var(--muted);margin:0}
+
+    /* ===== ĐĂNG KÝ (form lưu vào Supabase) ===== */
+    .signup-form{display:flex;flex-direction:column;gap:12px;max-width:440px;margin-top:8px}
+    .signup-form input{
+      width:100%;font-family:'Inter',sans-serif;font-size:15px;
+      background:var(--surface);color:var(--text);
+      border:1px solid var(--border);border-radius:var(--radius);
+      padding:13px 16px;
+    }
+    .signup-form input::placeholder{color:var(--muted)}
+    .signup-form input:focus{outline:2px solid var(--accent);outline-offset:2px;border-color:transparent}
+    .signup-form button{
+      font-family:'Sora',sans-serif;font-weight:600;font-size:15px;
+      background:var(--accent);color:#1a0e07;
+      border:none;border-radius:var(--radius);padding:14px;
+      cursor:pointer;transition:transform .15s ease;
+    }
+    .signup-form button:hover{transform:translateY(-2px)}
+    .signup-form button:disabled{opacity:.6;cursor:not-allowed;transform:none}
+    .form-status{font-size:14px;min-height:20px;margin-top:2px}
+    .form-status.ok{color:var(--accent)}
+    .form-status.err{color:#ff7a7a}
+
+    /* ===== TABS ĐĂNG NHẬP / ĐĂNG KÝ ===== */
+    .auth-tabs{display:inline-flex;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:999px;margin:4px 0 18px}
+    .auth-tab{
+      font-family:'Sora',sans-serif;font-weight:600;font-size:14px;
+      color:var(--muted);background:transparent;border:none;cursor:pointer;
+      padding:9px 20px;border-radius:999px;transition:color .2s,background .2s;
+    }
+    .auth-tab.is-active{color:#1a0e07;background:var(--accent)}
+    .auth-tab:not(.is-active):hover{color:var(--text)}
+
+    /* ===== THANH TÀI KHOẢN (thu gọn sau khi đăng nhập) ===== */
+    .account-box{max-width:440px;margin-top:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+    .account-head{
+      width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;
+      background:transparent;border:none;cursor:pointer;color:var(--text);
+      font-family:'Inter',sans-serif;font-size:15px;text-align:left;padding:16px 18px;
+    }
+    .account-head:hover{background:var(--elevated)}
+    .account-head-left{display:flex;align-items:center;gap:10px;min-width:0}
+    .account-head-left strong{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .account-dot{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:12px}
+    .account-caret{flex:0 0 auto;color:var(--muted);transition:transform .2s ease}
+    .account-head[aria-expanded="true"] .account-caret{transform:rotate(180deg)}
+    .account-body{padding:0 18px 18px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:14px}
+    .account-field{display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--muted);margin-top:14px}
+    .account-row{display:flex;gap:8px}
+    .account-row input{
+      flex:1;min-width:0;font-family:'Inter',sans-serif;font-size:15px;
+      background:var(--bg);color:var(--text);border:1px solid var(--border);
+      border-radius:10px;padding:11px 14px;
+    }
+    .account-row input:focus{outline:2px solid var(--accent);outline-offset:2px;border-color:transparent}
+    .btn-sm{
+      font-family:'Sora',sans-serif;font-weight:600;font-size:14px;white-space:nowrap;
+      background:var(--accent);color:#1a0e07;border:none;border-radius:10px;
+      padding:0 16px;cursor:pointer;transition:transform .15s ease;
+    }
+    .btn-sm:hover{transform:translateY(-2px)}
+    .btn-line-sm{
+      font-family:'Sora',sans-serif;font-weight:600;font-size:14px;
+      background:transparent;color:var(--text);border:1px solid var(--border);
+      border-radius:10px;padding:12px;cursor:pointer;transition:border-color .2s,background .2s;
+    }
+    .btn-line-sm:hover{border-color:var(--accent);background:var(--elevated)}
+    .btn-sm:disabled,.btn-line-sm:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+    /* ===== LIÊN HỆ ===== */
+    .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+    .chip{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border:1px solid var(--border);border-radius:999px;background:var(--surface);font-size:15px;transition:border-color .2s,background .2s}
+    .chip:hover{border-color:var(--accent);background:var(--elevated)}
+
+    footer{padding:40px 0 60px;color:var(--muted);font-size:14px;border-top:1px solid var(--border)}
+
+    @media(max-width:560px){
+      .nav-links{gap:16px}
+      .hero{padding:64px 0 48px}
+    }
+    @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto}}
+  </style>
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header>
+    <div class="wrap nav">
+      <!-- ĐỔI TÊN / LOGO (đang để trống) -->
+      <span class="brand"></span>
+      <nav class="nav-links">
+        <a href="#work">Dự án</a>
+        <a href="#auth">Tài khoản</a>
+        <a href="#contact">Liên hệ</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <div class="wrap">
+      <!-- ĐỔI LỜI CHÀO -->
+      <h1>Xin chào 👋</h1>
+      <p class="lead">Mình đang xây dựng thương hiệu phụ kiện sạc nhỏ gọn, và nghịch công nghệ mỗi ngày.</p>
+      <div class="hero-links">
+        <a href="#work" class="btn btn-fill">Xem dự án →</a>
+        <a href="#contact" class="btn btn-line">Liên hệ</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== DỰ ÁN ===== -->
+  <section class="block" id="work">
+    <div class="wrap">
+      <div class="label">// dự án</div>
+      <h2>Những thứ mình đang làm</h2>
+      <div class="projects">
+
+        <!-- THẺ DỰ ÁN — thay href bằng link thật -->
+        <a href="https://github.com/NoNameTA/githubluutru" class="proj">
+          <h3>Kho lưu trữ file cá nhân <span class="arr">↗</span></h3>
+          <p>Ứng dụng web nhỏ để tải lên, phân loại và quản lý file theo từng mục.</p>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ĐĂNG NHẬP / ĐĂNG KÝ (Supabase Auth) ===== -->
+  <section class="block" id="auth">
+    <div class="wrap">
+      <div class="label">// tài khoản</div>
+      <h2>Đăng nhập / Đăng ký</h2>
+      <p id="au-sub">Tạo tài khoản hoặc đăng nhập để nhận deal phụ kiện sạc sớm nhất.</p>
+
+      <!-- Tabs -->
+      <div class="auth-tabs" id="auth-tabs">
+        <button type="button" class="auth-tab is-active" data-mode="login">Đăng nhập</button>
+        <button type="button" class="auth-tab" data-mode="register">Đăng ký</button>
+      </div>
+
+      <!-- Form đăng nhập / đăng ký -->
+      <div class="signup-form" id="auth-form">
+        <input id="au-email" type="email"    placeholder="Email của bạn"   autocomplete="email">
+        <input id="au-pass"  type="password" placeholder="Mật khẩu"        autocomplete="current-password">
+        <button id="au-btn">Đăng nhập</button>
+        <div class="form-status" id="au-status"></div>
+      </div>
+
+      <!-- Thanh tài khoản (hiện sau khi đăng nhập thành công, mặc định thu gọn) -->
+      <div class="account-box" id="account-box" hidden>
+        <button type="button" class="account-head" id="account-head" aria-expanded="false" aria-controls="account-body">
+          <span class="account-head-left">
+            <span class="account-dot">✓</span>
+            <span>Đã đăng nhập · <strong id="account-email">—</strong></span>
+          </span>
+          <span class="account-caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="account-body" id="account-body" hidden>
+          <label class="account-field">
+            Đổi email
+            <span class="account-row">
+              <input id="new-email" type="email" placeholder="Email mới" autocomplete="email">
+              <button type="button" id="change-email-btn" class="btn-sm">Lưu</button>
+            </span>
+          </label>
+          <button type="button" id="logout-btn" class="btn-line-sm">Đổi tài khoản (đăng xuất)</button>
+          <div class="form-status" id="account-status"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== LIÊN HỆ ===== -->
+  <section class="block" id="contact">
+    <div class="wrap">
+      <div class="label">// liên hệ</div>
+      <h2>Kết nối với mình</h2>
+      <p>Tìm mình qua các kênh dưới đây.</p>
+      <div class="chips">
+        <!-- ĐỔI LINK & THÔNG TIN -->
+        <a href="mailto:hello@example.com" class="chip">✉️ Email</a>
+        <a href="#" class="chip">🛒 Shopee</a>
+        <a href="#" class="chip">🎵 TikTok</a>
+        <a href="https://github.com/NoNameTA" class="chip">💻 GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <div class="wrap">© 2026 · Host miễn phí trên GitHub Pages</div>
+  </footer>
+
+  <!-- ===== Thư viện Supabase ===== -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ===================================================================
+    //  CẤU HÌNH SUPABASE
+    //  - Publishable key: được phép công khai.
+    //  - Project URL: lấy ở Supabase Dashboard -> Project Settings ->
+    //    Data API -> "Project URL" (dạng https://xxxxx.supabase.co)
+    //
+    //  YÊU CẦU PHÍA SUPABASE (làm 1 lần):
+    //  - Vào Authentication -> Providers -> bật "Email".
+    //  - Nếu muốn đăng ký xong dùng được ngay, tắt "Confirm email"
+    //    (nếu bật, người dùng phải mở email xác nhận trước khi đăng nhập).
+    // ===================================================================
+    const SUPABASE_URL = 'https://ztwefkalncrhtvvfmldn.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_DvqTXJnlPNokfa8wJmbUWw_FsORXng7';
+
+    // ----- Lấy các phần tử trên trang -----
+    const subText     = document.getElementById('au-sub');
+    const tabsWrap    = document.getElementById('auth-tabs');
+    const tabBtns     = Array.from(document.querySelectorAll('.auth-tab'));
+    const authForm    = document.getElementById('auth-form');
+    const emailInput  = document.getElementById('au-email');
+    const passInput   = document.getElementById('au-pass');
+    const authBtn     = document.getElementById('au-btn');
+    const authStatus  = document.getElementById('au-status');
+
+    const accountBox   = document.getElementById('account-box');
+    const accountHead  = document.getElementById('account-head');
+    const accountBody  = document.getElementById('account-body');
+    const accountEmail = document.getElementById('account-email');
+    const newEmail     = document.getElementById('new-email');
+    const changeBtn    = document.getElementById('change-email-btn');
+    const logoutBtn    = document.getElementById('logout-btn');
+    const acctStatus   = document.getElementById('account-status');
+
+    let mode = 'login'; // 'login' | 'register'
+
+    // ----- Tạo Supabase client an toàn -----
+    let sbClient = null;
+    try {
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch (e) {
+      console.error('Không tạo được Supabase client:', e);
+    }
+
+    // ----- Tiện ích hiển thị trạng thái -----
+    function showStatus(el, msg, type) {
+      el.textContent = msg;
+      el.className = 'form-status ' + (type || '');
+    }
+
+    // ----- Chuyển tab Đăng nhập / Đăng ký -----
+    function setMode(next) {
+      mode = next;
+      tabBtns.forEach(b => b.classList.toggle('is-active', b.dataset.mode === next));
+      if (next === 'login') {
+        authBtn.textContent = 'Đăng nhập';
+        passInput.setAttribute('autocomplete', 'current-password');
+        subText.textContent = 'Đăng nhập để nhận deal phụ kiện sạc sớm nhất.';
+      } else {
+        authBtn.textContent = 'Đăng ký';
+        passInput.setAttribute('autocomplete', 'new-password');
+        subText.textContent = 'Tạo tài khoản mới (mật khẩu tối thiểu 6 ký tự).';
+      }
+      showStatus(authStatus, '', '');
+    }
+    tabsWrap.addEventListener('click', function (e) {
+      const btn = e.target.closest('.auth-tab');
+      if (btn) setMode(btn.dataset.mode);
+    });
+
+    // ----- Hiện form đăng nhập (khi chưa đăng nhập / sau khi đăng xuất) -----
+    function showLoggedOut() {
+      accountBox.hidden = true;
+      tabsWrap.hidden = false;
+      authForm.hidden = false;
+      subText.hidden = false;
+      emailInput.value = '';
+      passInput.value = '';
+      setMode('login');
+    }
+
+    // ----- Ẩn form và hiện thanh tài khoản thu gọn -----
+    function showLoggedIn(email) {
+      accountEmail.textContent = email || '';
+      tabsWrap.hidden = true;
+      authForm.hidden = true;
+      subText.hidden = true;
+      accountBox.hidden = false;
+      // luôn về trạng thái thu gọn khi vừa đăng nhập
+      accountBody.hidden = true;
+      accountHead.setAttribute('aria-expanded', 'false');
+      showStatus(acctStatus, '', '');
+      newEmail.value = '';
+    }
+
+    // ----- Bấm vào thanh thu gọn để mở / đóng phần đổi email - đổi tài khoản -----
+    accountHead.addEventListener('click', function () {
+      const open = accountBody.hidden;
+      accountBody.hidden = !open;
+      accountHead.setAttribute('aria-expanded', String(open));
+    });
+
+    // ----- Xử lý Đăng nhập / Đăng ký -----
+    authBtn.addEventListener('click', async function () {
+      if (!sbClient) {
+        showStatus(authStatus, 'Chưa kết nối được Supabase — thư viện chưa tải. Kiểm tra mạng hoặc mở đúng file.', 'err');
+        return;
+      }
+      const email = emailInput.value.trim();
+      const pass  = passInput.value;
+
+      if (!email)                 { showStatus(authStatus, 'Bạn nhập email giúp mình nhé.', 'err'); return; }
+      if (!email.includes('@'))   { showStatus(authStatus, 'Email chưa đúng định dạng.', 'err'); return; }
+      if (!pass)                  { showStatus(authStatus, 'Bạn nhập mật khẩu nhé.', 'err'); return; }
+      if (mode === 'register' && pass.length < 6) {
+        showStatus(authStatus, 'Mật khẩu cần ít nhất 6 ký tự.', 'err'); return;
+      }
+
+      authBtn.disabled = true;
+      authBtn.textContent = mode === 'login' ? 'Đang đăng nhập…' : 'Đang tạo tài khoản…';
+      showStatus(authStatus, '', '');
+
+      try {
+        if (mode === 'login') {
+          const { data, error } = await sbClient.auth.signInWithPassword({ email: email, password: pass });
+          if (error) {
+            showStatus(authStatus, 'Đăng nhập thất bại: ' + error.message, 'err');
+          } else {
+            showLoggedIn(data.user && data.user.email);
+          }
+        } else {
+          const { data, error } = await sbClient.auth.signUp({
+            email: email,
+            password: pass,
+            options: { emailRedirectTo: window.location.origin + window.location.pathname }
+          });
+          if (error) {
+            showStatus(authStatus, 'Đăng ký thất bại: ' + error.message, 'err');
+          } else if (data.session) {
+            // Không bật xác nhận email -> đăng nhập luôn
+            showLoggedIn(data.user && data.user.email);
+          } else {
+            // Có bật xác nhận email -> cần mở email để xác nhận
+            showStatus(authStatus, 'Đã tạo tài khoản! Kiểm tra email để xác nhận rồi đăng nhập.', 'ok');
+            setMode('login');
+          }
+        }
+      } catch (e) {
+        showStatus(authStatus, 'Lỗi kết nối: ' + e.message, 'err');
+      }
+
+      authBtn.disabled = false;
+      authBtn.textContent = mode === 'login' ? 'Đăng nhập' : 'Đăng ký';
+    });
+
+    // ----- Đổi email -----
+    changeBtn.addEventListener('click', async function () {
+      if (!sbClient) return;
+      const val = newEmail.value.trim();
+      if (!val || !val.includes('@')) { showStatus(acctStatus, 'Email mới chưa hợp lệ.', 'err'); return; }
+
+      changeBtn.disabled = true;
+      changeBtn.textContent = '…';
+      showStatus(acctStatus, '', '');
+      try {
+        const { error } = await sbClient.auth.updateUser({ email: val });
+        if (error) {
+          showStatus(acctStatus, 'Đổi email thất bại: ' + error.message, 'err');
+        } else {
+          showStatus(acctStatus, 'Đã gửi liên kết xác nhận tới email mới. Mở email để hoàn tất.', 'ok');
+        }
+      } catch (e) {
+        showStatus(acctStatus, 'Lỗi: ' + e.message, 'err');
+      }
+      changeBtn.disabled = false;
+      changeBtn.textContent = 'Lưu';
+    });
+
+    // ----- Đổi tài khoản (đăng xuất) -----
+    logoutBtn.addEventListener('click', async function () {
+      if (!sbClient) return;
+      logoutBtn.disabled = true;
+      try { await sbClient.auth.signOut(); } catch (e) { console.error(e); }
+      logoutBtn.disabled = false;
+      showLoggedOut();
+    });
+
+    // ----- Khi mở trang: kiểm tra đã đăng nhập chưa -----
+    (async function init() {
+      if (!sbClient) { showStatus(authStatus, 'Chưa kết nối được Supabase — kiểm tra mạng hoặc Project URL.', 'err'); return; }
+      try {
+        const { data } = await sbClient.auth.getSession();
+        if (data.session && data.session.user) {
+          showLoggedIn(data.session.user.email);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      // Đồng bộ UI khi phiên đăng nhập thay đổi (ví dụ xác nhận email ở tab khác)
+      sbClient.auth.onAuthStateChange(function (event, session) {
+        if (session && session.user) showLoggedIn(session.user.email);
+        else if (event === 'SIGNED_OUT') showLoggedOut();
+      });
+    })();
+  </script>
+
+  <!--
+  ========================================================
+  GHI CHÚ — CÁCH SỬA
+  - Tìm các dòng "ĐỔI..." để thay nội dung.
+  - Thay href="#" bằng link thật (Shopee, TikTok, dự án...).
+  - Đổi màu nhấn: sửa --accent ở đầu file (ví dụ #5B8CFF cho màu xanh).
+  - Đăng nhập/Đăng ký: cần Project URL đúng + bật Email provider trong Supabase.
+  - Khi đưa lên GitHub, đổi tên file này thành index.html
+  ========================================================
+  -->
+
+</body>
+</html>
